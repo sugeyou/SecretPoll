@@ -15,16 +15,6 @@ class DB:
     def __del__(self):
         self.conn.close()
 
-    def create_user_mode_tbl(self):
-        with self.conn as conn:
-            with conn.cursor() as curs:
-                curs.execute('''
-                    create table user_mode (
-                    uid bigint primary key,
-                    umode varchar(8)
-                    );
-                ''')
-
     def create_poll_tbl(self):
         with self.conn as conn:
             with conn.cursor() as curs:
@@ -32,6 +22,7 @@ class DB:
                     create table poll (
                     pollid varchar(40) primary key,
                     question text,
+                    author = bigint,
                     isactive boolean
                     );
                 ''')
@@ -59,11 +50,22 @@ class DB:
                     );
                 ''')
 
+    def create_user_mode_tbl(self):
+        with self.conn as conn:
+            with conn.cursor() as curs:
+                curs.execute('''
+                    create table user_mode (
+                    uid bigint primary key,
+                    umode varchar(8),
+                    pollid references poll on delete set null
+                    );
+                ''')
+
     def create_tbls(self):
-        self.create_user_mode_tbl()
         self.create_poll_tbl()
         self.create_answer_tbl()
         self.create_user_answer_tbl()
+        self.create_user_mode_tbl()
 
 if __name__ == '__main__':
     db = DB()
