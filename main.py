@@ -5,19 +5,19 @@ import os
 
 
 def private(func):
-    def wrapped(bot,update, *args, **kwargs):
+    def wrapped(update, context, *args, **kwargs):
         if update.message.chat.type=='private':
-            return func(bot,update, *args, **kwargs)
+            return func(update, context, *args, **kwargs)
         return
     return wrapped
 
 @private
-def start(bot, update):
+def start(update, context):
     update.message.reply_text('Чтобы создать опрос, нажмите /NewPoll')
     print('start @', update.effective_user.username)
 
 @private
-def help(bot, update):
+def help(update, context):
     update.message.reply_text('''
         Бот предназначен для создания секретных опросов. 
         Никто кроме создателя опроса не видит результат голосования.
@@ -28,17 +28,16 @@ def help(bot, update):
         ''')
     print('help')
 
-def ProcessMsg(bot, update):
-    db=DB()
-    db.HandleMsg(update)
-    print('updated/save data of @', update.effective_user.username, ' for chat ', update.effective_chat.title)
+def ProcessMsg(update, context):
+    print('updated/save data of @', update.effective_user.username, 
+          ' for chat ', update.effective_chat.title)
 
 @private
-def add_new_poll(bot, update):
+def add_new_poll(update, context):
     pass
 
 @private
-def get_my_polls(bot, update):
+def get_my_polls(update, context):
     pass
 
 def main():
