@@ -5,7 +5,7 @@ import os
 class DB:
 
     def __init__(self):
-        db_config = urlparse(os.environ['DATABASE_URL'])
+        db_config = urlparse('postgres://kfanyhyrpkqnxf:36085e0501ec8e12c0338294cc9f2de066e93405c1fe6cd97b671f88eb3cfb0d@ec2-46-137-124-19.eu-west-1.compute.amazonaws.com:5432/df0ko1fn1873p8')
         self.conn=psycopg2.connect(user=db_config.username,
                                      password=db_config.password,
                                      database=db_config.path[1:],
@@ -21,9 +21,16 @@ class DB:
                     create table poll (
                     pollid varchar(40) primary key,
                     question text,
-                    creator = bigint,
+                    creator bigint,
                     isactive boolean
                     );
+                ''')
+
+    def drop_poll_tbl(self):
+        with self.conn as conn:
+            with conn.cursor() as curs:
+                curs.execute('''
+                    drop table poll cascade;
                 ''')
 
     def create_answer_tbl(self):
@@ -35,6 +42,13 @@ class DB:
                     pollid varchar(40) references poll on delete cascade,
                     answer text
                     );
+                ''')
+
+    def drop_answer_tbl(self):
+        with self.conn as conn:
+            with conn.cursor() as curs:
+                curs.execute('''
+                    drop table answer cascade;
                 ''')
 
     def create_user_answer_tbl(self):
@@ -49,6 +63,13 @@ class DB:
                     );
                 ''')
 
+    def drop_user_answer_tbl(self):
+        with self.conn as conn:
+            with conn.cursor() as curs:
+                curs.execute('''
+                    drop table user_answer cascade;
+                ''')
+
     def create_user_mode_tbl(self):
         with self.conn as conn:
             with conn.cursor() as curs:
@@ -56,8 +77,15 @@ class DB:
                     create table user_mode (
                     uid bigint primary key,
                     umode varchar(8),
-                    pollid references poll on delete set null
+                    pollid varchar(40) references poll on delete set null
                     );
+                ''')
+
+    def drop_user_mode_tbl(self):
+        with self.conn as conn:
+            with conn.cursor() as curs:
+                curs.execute('''
+                    drop table user_mode cascade;
                 ''')
 
     def create_tbls(self):
@@ -68,4 +96,5 @@ class DB:
 
 if __name__ == '__main__':
     db = DB()
+    #db.drop_user_mode_tbl()
     db.create_tbls()
