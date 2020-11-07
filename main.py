@@ -165,7 +165,7 @@ def change_poll_settings(update, context):
         del_btn = [InlineKeyboardButton('Удалить опрос', callback_data='setpoll_dell1_' + pollid)]
         buttons = [act_btn, del_btn]
         keyboard = InlineKeyboardMarkup(buttons)
-        update.callback_query.message.reply_text(txt, reply_markup=keyboard)
+        update.callback_query.edit_message_text(txt, reply_markup=keyboard)
     if set_mode == 'del1':
         txt = 'Вы уверены, что хотите удалить этот опрос?'
         del_btn = [InlineKeyboardButton('Удалить опрос', callback_data='setpoll_dell2_' + pollid)]
