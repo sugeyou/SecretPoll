@@ -239,7 +239,6 @@ def main():
     print('start program')
 
     updater=Updater(os.environ['TOKEN'])
-    updater=Updater(token)
     dp=updater.dispatcher
 
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, process_msg),0)
