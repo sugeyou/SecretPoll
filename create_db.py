@@ -4,9 +4,7 @@ from urllib.parse import urlparse
 class DB:
 
     def __init__(self):
-        #db_config = urlparse(os.environ['DATABASE_URL'])
-        db_url = ''
-        db_config = urlparse(db_url)
+        db_config = urlparse(os.environ['DATABASE_URL'])
         self.conn=psycopg2.connect(user=db_config.username,
                                      password=db_config.password,
                                      database=db_config.path[1:],
@@ -22,7 +20,7 @@ class DB:
                     create table poll (
                     pollid varchar(40) primary key,
                     question text,
-                    author = bigint,
+                    creator = bigint,
                     isactive boolean
                     );
                 ''')
