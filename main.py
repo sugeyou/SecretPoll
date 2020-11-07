@@ -30,7 +30,7 @@ def check_ready(func):
 def check_poll_creator(func):
     def wrapped(update, context, *args, **kwargs):
         uid = update.effective_user.id
-        pollid = update.callback_query.data.split('_')[1]
+        pollid = update.callback_query.data.split('_')[-1]
         db = DB()
         creator = db.get_creator(pollid)
         if creator == uid:
@@ -44,7 +44,7 @@ def check_poll_creator(func):
 def check_poll_exists(func):
     def wrapped(update, context, *args, **kwargs):
         uid = update.effective_user.id
-        pollid = update.callback_query.data.split('_')[1]
+        pollid = update.callback_query.data.split('_')[-1]
         db = DB()
         if not db.poll_exists(pollid):
             update.callback_query.message.reply_text('Такого опроса не обнаружено')
