@@ -157,13 +157,22 @@ def change_poll_settings(update, context):
     db = DB()
     if set_mode == 'act':
         is_active = db.is_poll_active(pollid)
-        db.set_poll_active(pollid, not is_active)
+        is_active = not is_active
+        db.set_poll_active(pollid, is_active)
+        txt = update.callback_query.message.text
+        act_btn = [InlineKeyboardButton('Остановить опрос' if is_active else 'Запустить опрос', 
+                                    callback_data='setpoll_act_' + pollid)]
+        del_btn = [InlineKeyboardButton('Удалить опрос', callback_data='setpoll_dell1_' + pollid)]
+        buttons = [act_btn, del_btn]
+        keyboard = InlineKeyboardMarkup(buttons)
+        update.callback_query.message.reply_text(txt, reply_markup=keyboard)
     if set_mode == 'del1':
         txt = 'Вы уверены, что хотите удалить этот опрос?'
         del_btn = [InlineKeyboardButton('Удалить опрос', callback_data='setpoll_dell2_' + pollid)]
         update.callback_query.message.reply_text(txt, reply_markup=InlineKeyboardMarkup([del_btn]))
     if set_mode == 'del2':
         db.delete_poll(pollid)
+        update.callback_query.message.reply_text('Опрос удален')
     update.callback_query.answer()
 
 @check_ready
