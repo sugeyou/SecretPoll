@@ -5,9 +5,7 @@ from uuid import uuid4
 class DB:
 
     def __init__(self):
-        #db_config = urlparse(os.environ['DATABASE_URL'])
-        db_url = ''
-        db_config = urlparse(db_url)
+        db_config = urlparse(os.environ['DATABASE_URL'])
         self.conn=psycopg2.connect(user=db_config.username,
                                      password=db_config.password,
                                      database=db_config.path[1:],
@@ -39,98 +37,122 @@ class DB:
                              '''.format(uid, umode, (pollid or 'NULL')))
 
     def create_poll(self, question, author):
-        pid = str(uuid4())
+        pollid = str(uuid4())
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
                              insert into poll (pollid, question, author, isactive) 
                              values ('{0}', '{1}', {2}, {3});
-                             '''.format(pid, question, author, False))
-        return pid
+                             '''.format(pollid, question, author, False))
+        return pollid
     
-    def set_poll_active(self, pid, isactive=True):
+    def set_poll_active(self, pollid, isactive=True):
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
                              update poll set isactive={0} where pollid='{1}';
-                             '''.format(isactive, pid))
+                             '''.format(isactive, pollid))
 
-    def is_poll_active(self, pid):
+    def is_poll_active(self, pollid):
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
                              select isactive from poll where pollid='{0}';
-                             '''.format(pid))
+                             '''.format(pollid))
                 result = curs.fetchall()
                 isactive = result[0][0] if result and result[0] else False
         return isactive
 
-    def poll_exists(self, pid):
+    def poll_exists(self, pollid):
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
                              select pollid from poll where pollid='{0}';
-                             '''.format(pid))
+                             '''.format(pollid))
                 result = curs.fetchall()
                 exists = result and result[0] and result[0][0]
         return exists
 
-    def delete_poll(self, pid):
+    def get_creator(self, pollid):
+        with self.conn as conn:
+            with conn.cursor() as curs:
+                curs.execute('''
+                             select creator from poll where pollid='{0}';
+                             '''.format(pollid))
+                result = curs.fetchall()
+                creator = result and result[0] and result[0][0]
+        return creator
+
+    def delete_poll(self, pollid):
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
                              delete from poll where pollid='{}';
-                             '''.format(pid))
+                             '''.format(pollid))
 
-    def add_answer(self, pid, answer):
+    def add_answer(self, pollid, answer):
         answerid = str(uuid4())
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
                              insert into answer (answerid, pollid, answer) 
                              values ('{0}', '{1}', '{2}');
-                             '''.format(answerid, pid, answer))
+                             '''.format(answerid, pollid, answer))
         return answerid
     
-    def add_user_answer(self, uid, pid, answerid):
+    def add_user_answer(self, uid, pollid, answerid):
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
                              insert into answer (uid, pollid, answerid) 
                              values ('{0}', '{1}', '{2}');
-                             '''.format(uid, pid, answerid))
+                             '''.format(uid, pollid, answerid))
 
     def get_user_poll_list(self, uid):
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
-                             select question from poll where author={0};
+                             select question, pollid from poll where creator={0};
                              '''.format(uid))
                 polls = curs.fetchall()
         return polls
 
-    def get_answer_list(self, pid):
+    def get_poll_question(self, pollid):
+        with self.conn as conn:
+            with conn.cursor() as curs:
+                curs.execute('''
+                             select question from poll where pollid={0};
+                             '''.format(pollid))
+                question = curs.fetchall()
+        return question
+
+    def get_answer_list(self, pollid):
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
                              select answer from answer where pollid='{0}';
-                             '''.format(pid))
+                             '''.format(pollid))
                 answers = curs.fetchall()
         return answers
 
-    def get_answer_count_list(self, pid):
+    def get_answer_count_list(self, pollid):
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
-                             select answer, max(count (answer) over (partition by answer))
-                             from answer 
+                             select a.answer, ac.acount from answer a
+                             left join
+                             (select answerid, 
+                             max(count (answerid) over (partition by answerid)) as acount
+                             from user_answer 
                              where pollid='{0}'
-                             group by answer;
-                             '''.format(pid))
+                             group by answerid) ac
+                             on a.answerid=ac.answerid
+                             where a.pollid='{0}';
+                             '''.format(pollid))
                 answers = curs.fetchall()
         return answers
     
-    def get_user_answer(self, pid, uid):
+    def get_user_answer(self, pollid, uid):
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
@@ -138,7 +160,7 @@ class DB:
                              inner join user_answer ua 
                              on a.answerid=ua.answerid
                              where ua.uid='{0}' and ua.pollid='{1}';
-                             '''.format(uid, pid))
+                             '''.format(uid, pollid))
                 answers = curs.fetchall()
         return answers
 
