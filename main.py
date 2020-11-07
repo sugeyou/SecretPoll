@@ -1,6 +1,8 @@
 __author__ = 'Valery'
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import CallbackQueryHandler, InlineQueryHandler, ChosenInlineResultHandler
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import InlineQueryResultArticle, InputTextMessageContent
 from datetime import datetime, date
 import os
 from uuid import uuid4
@@ -243,6 +245,23 @@ def cancel_poll(update, context):
         db.delete_poll(pollid)
     update.message.reply_text('Создание опроса отменено')
 
+def show_polls_inline(update, context):
+    uid = update.effective_user.id
+    db = DB()
+    polls = db.get_user_poll_list(uid)
+    query = update.inline_query.query
+    results = [make_iq_result(q, pollid) for q, pollid in polls if not query or query in q]
+    update.inline_query.answer(results)
+
+def make_iq_result(q, pollid):
+    db = DB()
+    answers = db.get_answer_list(pollid)
+    ans_btns = [[InlineKeyboardButton(a, callback_data=('anspoll_' + aid))] for a, aid in answers]
+    keyboard = InlineKeyboardMarkup(ans_btns)
+    return InlineQueryResultArticle(id=pollid, title=q, 
+                        input_message_content=InputTextMessageContent(q), reply_markup=keyboard)
+
+
 def main():
     print('start program')
 
@@ -259,6 +278,7 @@ def main():
     dp.add_handler(CallbackQueryHandler(show_poll_settings, pattern='^upoll_.*'), 2)
     dp.add_handler(CallbackQueryHandler(show_poll_list, pattern='^upolls_.*'), 2)
     dp.add_handler(CallbackQueryHandler(change_poll_settings, pattern='^setpoll_.*'), 2)
+    dp.add_handler(InlineQueryHandler(show_polls_inline), 3)
     print('handlers added')
 
     updater.start_polling()

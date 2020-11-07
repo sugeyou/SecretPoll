@@ -124,14 +124,15 @@ class DB:
                 curs.execute('''
                              select question from poll where pollid='{0}';
                              '''.format(pollid))
-                question = curs.fetchall()
+                result = curs.fetchall()
+                question = result and result[0] and result[0][0]
         return question
 
     def get_answer_list(self, pollid):
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
-                             select answer from answer where pollid='{0}';
+                             select answer, answerid from answer where pollid='{0}';
                              '''.format(pollid))
                 answers = curs.fetchall()
         return answers
