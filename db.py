@@ -122,7 +122,7 @@ class DB:
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
-                             select question from poll where pollid={0};
+                             select question from poll where pollid='{0}';
                              '''.format(pollid))
                 question = curs.fetchall()
         return question
