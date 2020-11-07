@@ -19,7 +19,7 @@ def check_ready(func):
     def wrapped(update, context, *args, **kwargs):
         uid = update.effective_user.id
         db = DB()
-        umode = db.get_user_mode(uid)
+        umode, _ = db.get_user_mode(uid)
         if umode == 'Ready':
             return func(update, context, *args, **kwargs)
         else:
