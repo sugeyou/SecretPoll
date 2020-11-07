@@ -142,7 +142,7 @@ def show_poll_settings(update, context):
           '\n'.join(['{0}: {1} ({2}%)'.format(a, c, c / tot_ans * 100) for a,c in answers]))
     act_btn = [InlineKeyboardButton('Остановить опрос' if is_active else 'Запустить опрос', 
                                     callback_data='setpoll_act_' + pollid)]
-    del_btn = [InlineKeyboardButton('Удалить опрос', callback_data='setpoll_dell1_' + pollid)]
+    del_btn = [InlineKeyboardButton('Удалить опрос', callback_data='setpoll_del1_' + pollid)]
     buttons = [act_btn, del_btn]
     keyboard = InlineKeyboardMarkup(buttons)
     update.callback_query.message.reply_text(txt, reply_markup=keyboard)
@@ -162,13 +162,13 @@ def change_poll_settings(update, context):
         txt = update.callback_query.message.text
         act_btn = [InlineKeyboardButton('Остановить опрос' if is_active else 'Запустить опрос', 
                                     callback_data='setpoll_act_' + pollid)]
-        del_btn = [InlineKeyboardButton('Удалить опрос', callback_data='setpoll_dell1_' + pollid)]
+        del_btn = [InlineKeyboardButton('Удалить опрос', callback_data='setpoll_del1_' + pollid)]
         buttons = [act_btn, del_btn]
         keyboard = InlineKeyboardMarkup(buttons)
         update.callback_query.edit_message_text(txt, reply_markup=keyboard)
     if set_mode == 'del1':
         txt = 'Вы уверены, что хотите удалить этот опрос?'
-        del_btn = [InlineKeyboardButton('Удалить опрос', callback_data='setpoll_dell2_' + pollid)]
+        del_btn = [InlineKeyboardButton('Удалить опрос', callback_data='setpoll_del2_' + pollid)]
         update.callback_query.message.reply_text(txt, reply_markup=InlineKeyboardMarkup([del_btn]))
     if set_mode == 'del2':
         db.delete_poll(pollid)
