@@ -42,7 +42,7 @@ class DB:
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
-                             insert into poll (pollid, question, author, isactive) 
+                             insert into poll (pollid, question, creator, isactive) 
                              values ('{0}', '{1}', {2}, {3});
                              '''.format(pollid, question, author, False))
         return pollid

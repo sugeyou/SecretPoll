@@ -26,6 +26,14 @@ class DB:
                     );
                 ''')
 
+    def set_null_poll(self):
+        with self.conn as conn:
+            with conn.cursor() as curs:
+                curs.execute('''
+                             insert into poll (pollid, question, creator, isactive) 
+                             values ('{0}', '{1}', {2}, {3});
+                             '''.format('', '', 0, False))
+
     def drop_poll_tbl(self):
         with self.conn as conn:
             with conn.cursor() as curs:
@@ -97,4 +105,5 @@ class DB:
 if __name__ == '__main__':
     db = DB()
     #db.drop_user_mode_tbl()
-    db.create_tbls()
+    #db.create_tbls()
+    db.set_null_poll()
