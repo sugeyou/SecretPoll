@@ -35,7 +35,7 @@ class DB:
                              insert into user_mode (uid, umode, pollid) 
                              values ('{0}', '{1}', '{2}')
                              on conflict (uid) do update set umode='{1}', pollid='{2}';
-                             '''.format(uid, umode, (pollid or 'NULL')))
+                             '''.format(uid, umode, (pollid or '')))
 
     def create_poll(self, question, author):
         pollid = str(uuid4())
