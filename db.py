@@ -1,6 +1,7 @@
 import psycopg2
 from urllib.parse import urlparse
 from uuid import uuid4
+import os
 
 class DB:
 
