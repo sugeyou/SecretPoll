@@ -33,7 +33,6 @@ def check_poll_creator(func):
         pollid = update.callback_query.data.split('_')[1]
         db = DB()
         creator = db.get_creator(pollid)
-        creator = creator[0][0]
         if creator == uid:
             return func(update, context, *args, **kwargs)
         else:
