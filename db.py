@@ -143,10 +143,9 @@ class DB:
                              select a.answer, ac.acount from answer a
                              left join
                              (select answerid, 
-                             max(count (answerid) over (partition by answerid)) as acount
+                             count (answerid) over (partition by answerid) as acount
                              from user_answer 
-                             where pollid='{0}'
-                             group by answerid) ac
+                             where pollid='{0}') ac
                              on a.answerid=ac.answerid
                              where a.pollid='{0}';
                              '''.format(pollid))
