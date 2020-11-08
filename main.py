@@ -248,7 +248,7 @@ def show_polls_inline(update, context):
     polls = db.get_user_poll_list(uid)
     query = update.inline_query.query
     results = [make_iq_result(q, pollid) for q, pollid in polls if not query or query in q]
-    update.inline_query.answer(results, cache_time=10, is_personal=True)
+    update.inline_query.answer(results, cache_time=30, is_personal=True)
 
 def make_iq_result(q, pollid):
     db = DB()
