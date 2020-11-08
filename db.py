@@ -105,7 +105,7 @@ class DB:
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
-                             insert into answer (uid, pollid, answerid) 
+                             insert into user_answer (uid, pollid, answerid) 
                              values ('{0}', '{1}', '{2}');
                              '''.format(uid, pollid, answerid))
 
