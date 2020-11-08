@@ -141,14 +141,15 @@ class DB:
         with self.conn as conn:
             with conn.cursor() as curs:
                 curs.execute('''
-                             select a.answer, ac.acount from answer a
+                             select a.answer, max(ac.acount) from answer a
                              left join
                              (select answerid, 
                              count (answerid) over (partition by answerid) as acount
                              from user_answer 
                              where pollid='{0}') ac
                              on a.answerid=ac.answerid
-                             where a.pollid='{0}';
+                             where a.pollid='{0}'
+                             group by a.answer;
                              '''.format(pollid))
                 answers = curs.fetchall()
         return answers
