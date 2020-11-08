@@ -38,8 +38,7 @@ def check_poll_creator(func):
         if creator == uid:
             return func(update, context, *args, **kwargs)
         else:
-            update.message.reply_text('У вас нет прав для этого действия')
-            update.callback_query.answer()
+            update.callback_query.answer(text='У вас нет прав для этого действия')
         return
     return wrapped
 
@@ -49,8 +48,7 @@ def check_poll_exists(func):
         pollid = update.callback_query.data.split('_')[-1]
         db = DB()
         if not db.poll_exists(pollid):
-            update.callback_query.message.reply_text('Такого опроса не обнаружено')
-            update.callback_query.answer()
+            update.callback_query.answer(text='Такого опроса не обнаружено')
             return
         return func(update, context, *args, **kwargs)
     return wrapped
@@ -174,7 +172,7 @@ def change_poll_settings(update, context):
         update.callback_query.message.reply_text(txt, reply_markup=InlineKeyboardMarkup([del_btn]))
     if set_mode == 'del2':
         db.delete_poll(pollid)
-        update.callback_query.message.reply_text('Опрос удален')
+        update.callback_query.answer(text='Опрос удален')
     update.callback_query.answer()
 
 @check_ready
@@ -184,8 +182,7 @@ def show_poll_list(update, context):
     db = DB()
     polls = db.get_user_poll_list(uid)
     if not polls or not polls[0]:
-        update.callback_query.message.reply_text('Опросов не обнаружено')
-        update.callback_query.answer()
+        update.callback_query.answer(text='Опросов не обнаружено')
         return
     polls_num = len(polls)
     buttons = [[InlineKeyboardButton(q, callback_data=('upoll_' + p))] for q,p in polls]
@@ -251,16 +248,34 @@ def show_polls_inline(update, context):
     polls = db.get_user_poll_list(uid)
     query = update.inline_query.query
     results = [make_iq_result(q, pollid) for q, pollid in polls if not query or query in q]
-    update.inline_query.answer(results)
+    update.inline_query.answer(results, cache_time=10, is_personal=True)
 
 def make_iq_result(q, pollid):
     db = DB()
     answers = db.get_answer_list(pollid)
-    ans_btns = [[InlineKeyboardButton(a, callback_data=('anspoll_' + aid))] for a, aid in answers]
+    ans_btns = [[InlineKeyboardButton(a, callback_data=('anspoll_{}_{}'.format(pollid, aid)))] 
+                for a, aid in answers]
     keyboard = InlineKeyboardMarkup(ans_btns)
     return InlineQueryResultArticle(id=pollid, title=q, 
                         input_message_content=InputTextMessageContent(q), reply_markup=keyboard)
 
+def process_poll_answer(update, context):
+    uid = update.effective_user.id
+    _, pollid, aid = update.callback_query.data.split('_')
+    db = DB()
+    if not db.poll_exists(pollid):
+        update.callback_query.answer(text='Такого опроса больше не существует')
+        return
+    if not db.is_poll_active(pollid):
+        update.callback_query.answer(text='В данный момент опрос закрыт, проголосовать невозможно')
+        return
+    user_answers = db.get_user_answer(pollid, uid)
+    if user_answers and user_answers[0]:
+        update.callback_query.answer(text='Вы уже проголосовали за вариант {}'.format(
+                                                                                user_answers[0][0]))
+        return
+    db.add_user_answer(uid, pollid, aid)
+    update.callback_query.answer(text='Ваш голос принят!')
 
 def main():
     print('start program')
@@ -278,6 +293,7 @@ def main():
     dp.add_handler(CallbackQueryHandler(show_poll_settings, pattern='^upoll_.*'), 2)
     dp.add_handler(CallbackQueryHandler(show_poll_list, pattern='^upolls_.*'), 2)
     dp.add_handler(CallbackQueryHandler(change_poll_settings, pattern='^setpoll_.*'), 2)
+    dp.add_handler(CallbackQueryHandler(process_poll_answer, pattern='^anspoll_.*'), 2)
     dp.add_handler(InlineQueryHandler(show_polls_inline), 3)
     print('handlers added')
 
