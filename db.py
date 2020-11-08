@@ -165,3 +165,13 @@ class DB:
                 answers = curs.fetchall()
         return answers
 
+    def get_pollid_from_aid(self, aid):
+        with self.conn as conn:
+            with conn.cursor() as curs:
+                curs.execute('''
+                             select pollid from answer 
+                             where answerid='{0}';
+                             '''.format(aid))
+                result = curs.fetchall()
+                pollid = result[0][0] if result and result[0] else None
+        return answers

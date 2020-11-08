@@ -248,12 +248,12 @@ def show_polls_inline(update, context):
     polls = db.get_user_poll_list(uid)
     query = update.inline_query.query
     results = [make_iq_result(q, pollid) for q, pollid in polls if not query or query in q]
-    update.inline_query.answer(results, cache_time=30, is_personal=True)
+    update.inline_query.answer(results, cache_time=10, is_personal=True)
 
 def make_iq_result(q, pollid):
     db = DB()
     answers = db.get_answer_list(pollid)
-    ans_btns = [[InlineKeyboardButton(a, callback_data=('anspoll_{}_{}'.format(pollid, aid)))] 
+    ans_btns = [[InlineKeyboardButton(a, callback_data='anspoll_{}'.format(aid))] 
                 for a, aid in answers]
     keyboard = InlineKeyboardMarkup(ans_btns)
     return InlineQueryResultArticle(id=pollid, title=q, 
@@ -261,9 +261,10 @@ def make_iq_result(q, pollid):
 
 def process_poll_answer(update, context):
     uid = update.effective_user.id
-    _, pollid, aid = update.callback_query.data.split('_')
+    _, aid = update.callback_query.data.split('_')
     db = DB()
-    if not db.poll_exists(pollid):
+    pollid = db.get_pollid_from_aid(aid)
+    if not pollid or not db.poll_exists(pollid):
         update.callback_query.answer(text='Такого опроса больше не существует')
         return
     if not db.is_poll_active(pollid):
