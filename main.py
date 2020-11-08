@@ -136,7 +136,7 @@ def show_poll_settings(update, context):
     question = db.get_poll_question(pollid)
     answers = db.get_answer_count_list(pollid)
     answers = [[a,c if c else 0] for a,c in answers]
-    answers.sort(key=lambda a: a[1])
+    answers.sort(key=lambda a: a[1], reverse=True)
     tot_ans = sum([ca[1] for ca in answers]) or 1
     txt = '{0}\n\n{1}'.format(question, 
           '\n'.join(['{0}: {1} ({2}%)'.format(a, c, c / tot_ans * 100) for a,c in answers]))
