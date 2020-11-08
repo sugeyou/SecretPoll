@@ -139,7 +139,7 @@ def show_poll_settings(update, context):
     answers.sort(key=lambda a: a[1], reverse=True)
     tot_ans = sum([ca[1] for ca in answers]) or 1
     txt = '{0}\n\n{1}'.format(question, 
-          '\n'.join(['{0}: {1} ({2}%)'.format(a, c, c / tot_ans * 100) for a,c in answers]))
+          '\n'.join(['{0}: {1} ({2}%)'.format(a, c, round(c / tot_ans * 100, 1)) for a,c in answers]))
     act_btn = [InlineKeyboardButton('Остановить опрос' if is_active else 'Запустить опрос', 
                                     callback_data='setpoll_act_' + pollid)]
     del_btn = [InlineKeyboardButton('Удалить опрос', callback_data='setpoll_del1_' + pollid)]
