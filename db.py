@@ -174,4 +174,4 @@ class DB:
                              '''.format(aid))
                 result = curs.fetchall()
                 pollid = result[0][0] if result and result[0] else None
-        return answers
+        return pollid
