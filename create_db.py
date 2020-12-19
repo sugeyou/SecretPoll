@@ -5,7 +5,7 @@ import os
 class DB:
 
     def __init__(self):
-        db_config = urlparse('postgres://kfanyhyrpkqnxf:36085e0501ec8e12c0338294cc9f2de066e93405c1fe6cd97b671f88eb3cfb0d@ec2-46-137-124-19.eu-west-1.compute.amazonaws.com:5432/df0ko1fn1873p8')
+        db_config = urlparse(os.environ['DATABASE_URL'])
         self.conn=psycopg2.connect(user=db_config.username,
                                      password=db_config.password,
                                      database=db_config.path[1:],
